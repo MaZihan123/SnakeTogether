@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5b2df951-90a9-44b5-ac6a-fc4deeba3908" name="imu">
+        <fileTransfer accessType="SFTP" host="183.175.12.68" port="22" sshConfigId="2ee2fda9-30d7-4761-8009-36e423037882" sshConfig="mazihan@183.175.12.68:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
