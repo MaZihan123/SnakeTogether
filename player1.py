@@ -21,6 +21,7 @@ pygame.mixer.init()
 eat = "eat.mp3"
 eat_sound = pygame.mixer.Sound(eat)
 
+
 class Snake:
     def __init__(self, x, y, direction=pygame.K_RIGHT):
         self.direction = direction

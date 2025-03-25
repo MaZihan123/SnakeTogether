@@ -5,6 +5,7 @@ import pygame
 from game_login import get_player_info
 import player1
 import player2
+import time
 
 # 获取玩家身份与昵称
 player_id, username = get_player_info()
@@ -18,6 +19,10 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 font_path = "fontEND.ttf"
+foodImg = pygame.image.load("baskteball.png")
+foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))
+
+
 
 font = pygame.font.Font(font_path, 32)
 
@@ -56,6 +61,8 @@ def main():
     current_direction = pygame.K_RIGHT
     running = True
     game_ended = False
+    global game_start_time
+    game_start_time=None
 
     while running:
         clock.tick(10)
@@ -98,19 +105,28 @@ def main():
 
             font = pygame.font.SysFont(font_path, 28)
 
+            if countdown == 0 and game_start_time is None:
+                game_start_time = time.time()
+
+            if game_start_time:
+                time_left = max(0, 120 - int(time.time() - game_start_time))
+                timer_font = pygame.font.Font(font_path, 28)
+                timer_surf = timer_font.render(f"剩余时间: {time_left}s", True, (0, 0, 200))
+                screen.blit(timer_surf, (SCREEN_WIDTH - 220, 20))
+
             if countdown > 0:
                 # 显示倒计时
-                countdown_text = pygame.font.SysFont(font_path, 80).render(str(countdown), True, (255, 0, 0))
+                countdown_text = pygame.font.Font(font_path, 80).render(str(countdown), True, (255, 0, 0))
                 screen.blit(countdown_text, ((SCREEN_WIDTH - countdown_text.get_width()) // 2, SCREEN_HEIGHT // 2 - 40))
             elif winner is not None:
                 # 显示游戏结束信息
                 if winner == -1:
                     result_text = f"平局！"
                 else:
-                    result_text = f"{usernames[winner]} 获胜！"
-                msg = pygame.font.SysFont(font_path, 60).render(result_text, True, (0, 128, 255))
+                    result_text = f"用户：{usernames[winner]} 获胜！"
+                msg = pygame.font.Font(font_path, 60).render(result_text, True, (0, 128, 255))
                 screen.blit(msg, ((SCREEN_WIDTH - msg.get_width()) // 2, SCREEN_HEIGHT // 2 - 50))
-                reason = pygame.font.SysFont(font_path, 30).render(f"原因：{end_reason}", True, (128, 128, 128))
+                reason = pygame.font.Font(font_path, 30).render(f"{end_reason}", True, (128, 128, 128))
                 screen.blit(reason, ((SCREEN_WIDTH - reason.get_width()) // 2, SCREEN_HEIGHT // 2 + 10))
                 game_ended = True
             else:
@@ -145,7 +161,7 @@ def main():
 
                 # 绘制食物
                 food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
-                screen.blit(player.snake_body_img, food_rect)
+                screen.blit(foodImg, food_rect)
 
                 # 显示分数和昵称
                 label1 = font.render(f"{usernames[0]}: {scores[0]}", True, (0, 128, 0))
