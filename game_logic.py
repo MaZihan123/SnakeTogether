@@ -40,8 +40,8 @@ class Snake:
         head = self.body[0]
         if head.x < 0 or head.x >= SCREEN_WIDTH or head.y < 0 or head.y >= SCREEN_HEIGHT:
             return True
-        if head in self.body[1:]:
-            return True
+        #if head in self.body[1:]:
+        #    return True
         return False
 
 class Food:

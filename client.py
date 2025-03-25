@@ -96,11 +96,11 @@ def main():
             winner = game_state.get("winner", None)
             end_reason = game_state.get("end_reason", "")
 
-            font = pygame.font.SysFont(None, 28)
+            font = pygame.font.SysFont(font_path, 28)
 
             if countdown > 0:
                 # 显示倒计时
-                countdown_text = pygame.font.SysFont(None, 80).render(str(countdown), True, (255, 0, 0))
+                countdown_text = pygame.font.SysFont(font_path, 80).render(str(countdown), True, (255, 0, 0))
                 screen.blit(countdown_text, ((SCREEN_WIDTH - countdown_text.get_width()) // 2, SCREEN_HEIGHT // 2 - 40))
             elif winner is not None:
                 # 显示游戏结束信息
@@ -108,9 +108,9 @@ def main():
                     result_text = f"平局！"
                 else:
                     result_text = f"{usernames[winner]} 获胜！"
-                msg = pygame.font.SysFont(None, 60).render(result_text, True, (0, 128, 255))
+                msg = pygame.font.SysFont(font_path, 60).render(result_text, True, (0, 128, 255))
                 screen.blit(msg, ((SCREEN_WIDTH - msg.get_width()) // 2, SCREEN_HEIGHT // 2 - 50))
-                reason = pygame.font.SysFont(None, 30).render(f"原因：{end_reason}", True, (128, 128, 128))
+                reason = pygame.font.SysFont(font_path, 30).render(f"原因：{end_reason}", True, (128, 128, 128))
                 screen.blit(reason, ((SCREEN_WIDTH - reason.get_width()) // 2, SCREEN_HEIGHT // 2 + 10))
                 game_ended = True
             else:
@@ -120,10 +120,28 @@ def main():
 
                 #渲染不同蛇
                 for i, snake_body in enumerate(snakes):
-                    img = player1.snake_head_img if i == 0 else player2.snake_head_img
-                    for x, y in snake_body:
+                    if i == 0:
+                        img = player1.snake_head_img
+                        name = usernames[0]
+                    else:
+                        img = player2.snake_head_img
+                        name = usernames[1]
+
+                    for idx, (x, y) in enumerate(snake_body):
                         rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-                        screen.blit(img, rect)
+
+                        # 加标识：在玩家自己控制的蛇头上添加高亮边框
+                        if idx == 0:
+                            if i == player_id:
+                                pygame.draw.rect(screen, (255, 255, 0), rect.inflate(4, 4))  # 黄色描边
+                            screen.blit(img, rect)
+
+                            # 加昵称文字
+                            font_user = pygame.font.SysFont(font_path, 20)
+                            name_surf = font_user.render(name, True, (0, 0, 0))
+                            screen.blit(name_surf, (x, y - 18))
+                        else:
+                            screen.blit(img, rect)
 
                 # 绘制食物
                 food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
