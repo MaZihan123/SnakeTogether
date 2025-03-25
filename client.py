@@ -25,7 +25,8 @@ def recvall(sock, n):
     return data
 
 def main():
-    server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
+    #server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
+    server_ip = "10.102.51.4"
     server_port = 12345
     print(f"Connecting to server {server_ip}:{server_port}...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

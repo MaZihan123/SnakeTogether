@@ -16,9 +16,13 @@ usernames = ["Player1", "Player2"]
 
 # 游戏对象初始化
 snake_list = [
-    Snake(100, 300, pygame.K_RIGHT),
-    Snake(700, 300, pygame.K_LEFT)
+    Snake(200, 300, pygame.K_RIGHT),
+    Snake(600, 300, pygame.K_LEFT)
 ]
+directions[0] = pygame.K_RIGHT
+directions[1] = pygame.K_LEFT
+
+
 food = Food()
 
 # 游戏状态控制
