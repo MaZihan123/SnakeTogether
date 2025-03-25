@@ -3,7 +3,7 @@ import pygame
 import sys
 
 pygame.init()
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 500
+SCREEN_WIDTH, SCREEN_HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("登录界面")
 

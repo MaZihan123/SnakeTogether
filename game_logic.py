@@ -5,8 +5,8 @@ import pygame
 import random
 
 BLOCK_SIZE = 20
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 
 class Snake:
     def __init__(self, x, y, direction=pygame.K_RIGHT):
