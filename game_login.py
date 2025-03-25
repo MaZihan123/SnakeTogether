@@ -7,8 +7,11 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("选择玩家身份")
 
-font = pygame.font.SysFont("Arial", 32)
-small_font = pygame.font.SysFont("Arial", 24)
+font_path = "fontEND.ttf"
+
+font = pygame.font.Font(font_path, 32)
+small_font = pygame.font.Font(font_path, 24)
+
 
 clock = pygame.time.Clock()
 

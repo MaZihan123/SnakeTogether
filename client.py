@@ -15,7 +15,6 @@ BLOCK_SIZE = 20
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-
 def recvall(sock, n):
     data = b''
     while len(data) < n:
@@ -24,7 +23,6 @@ def recvall(sock, n):
             return None
         data += packet
     return data
-
 
 def main():
     server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
@@ -50,6 +48,7 @@ def main():
 
     current_direction = pygame.K_RIGHT
     running = True
+    game_ended = False
 
     while running:
         clock.tick(10)
@@ -86,37 +85,61 @@ def main():
             scores = game_state["scores"]
             ate = game_state.get("ate", [False, False])
             usernames = game_state.get("usernames", ["Player1", "Player2"])
+            countdown = game_state.get("countdown", 0)
+            winner = game_state.get("winner", None)
+            end_reason = game_state.get("end_reason", "")
 
-            # 播放吃食音效
-            if ate[player_id]:
-                player.eat_sound.play()
-
-            # 绘制蛇
-            for i, snake_body in enumerate(snakes):
-                img = player.snake_head_img if i == player_id else player.snake_body_img
-                for x, y in snake_body:
-                    rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
-                    screen.blit(img, rect)
-
-            # 绘制食物
-            food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
-            screen.blit(player.snake_body_img, food_rect)
-
-            # 显示分数和昵称
             font = pygame.font.SysFont(None, 28)
-            label1 = font.render(f"{usernames[0]}: {scores[0]}", True, (0, 128, 0))
-            label2 = font.render(f"{usernames[1]}: {scores[1]}", True, (128, 0, 0))
-            screen.blit(label1, (20, 20))
-            screen.blit(label2, (20, 50))
+
+            if countdown > 0:
+                # 显示倒计时
+                countdown_text = pygame.font.SysFont(None, 80).render(str(countdown), True, (255, 0, 0))
+                screen.blit(countdown_text, ((SCREEN_WIDTH - countdown_text.get_width()) // 2, SCREEN_HEIGHT // 2 - 40))
+            elif winner is not None:
+                # 显示游戏结束信息
+                if winner == -1:
+                    result_text = f"平局！"
+                else:
+                    result_text = f"{usernames[winner]} 获胜！"
+                msg = pygame.font.SysFont(None, 60).render(result_text, True, (0, 128, 255))
+                screen.blit(msg, ((SCREEN_WIDTH - msg.get_width()) // 2, SCREEN_HEIGHT // 2 - 50))
+                reason = pygame.font.SysFont(None, 30).render(f"原因：{end_reason}", True, (128, 128, 128))
+                screen.blit(reason, ((SCREEN_WIDTH - reason.get_width()) // 2, SCREEN_HEIGHT // 2 + 10))
+                game_ended = True
+            else:
+                # 播放吃食音效
+                if ate[player_id]:
+                    player.eat_sound.play()
+
+                # 绘制蛇
+                for i, snake_body in enumerate(snakes):
+                    img = player.snake_head_img if i == player_id else player.snake_body_img
+                    for x, y in snake_body:
+                        rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+                        screen.blit(img, rect)
+
+                # 绘制食物
+                food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
+                screen.blit(player.snake_body_img, food_rect)
+
+                # 显示分数和昵称
+                label1 = font.render(f"{usernames[0]}: {scores[0]}", True, (0, 128, 0))
+                label2 = font.render(f"{usernames[1]}: {scores[1]}", True, (128, 0, 0))
+                screen.blit(label1, (20, 20))
+                screen.blit(label2, (20, 50))
 
             pygame.display.flip()
+
+            if game_ended:
+                pygame.time.delay(5000)
+                running = False
+
         except Exception as e:
             print("游戏循环错误:", e)
             break
 
     pygame.quit()
     sock.close()
-
 
 if __name__ == "__main__":
     main()
