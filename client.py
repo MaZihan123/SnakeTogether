@@ -15,8 +15,8 @@ player_module_name = f"player{player_id + 1}"
 player = importlib.import_module(player_module_name)
 
 BLOCK_SIZE = 20
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 
 font_path = "fontEND.ttf"
 foodImg = pygame.image.load("baskteball.png")
@@ -132,8 +132,9 @@ def main():
                 game_ended = True
             else:
                 # 播放吃食音效
-                if player_id < len(ate) and ate[player_id]:
-                    player.eat_sound.play()
+                if isinstance(ate, list) and 0 <= player_id < len(ate):
+                    if ate[player_id]:
+                        player.eat_sound.play()
 
                 # 绘制所有蛇
                 for i, snake_body in enumerate(snakes):
@@ -149,9 +150,9 @@ def main():
                             if i == player_id:
                                 pygame.draw.rect(screen, (255, 255, 0), rect.inflate(4, 4))
                             screen.blit(head_img, rect)
-                            if i < len(usernames):
+                            if isinstance(usernames, list) and i < len(usernames):
                                 name_surf = pygame.font.SysFont(font_path, 20).render(usernames[i], True, (0, 0, 0))
-                                screen.blit(name_surf, (x, y - 18))
+                                screen.blit(name_surf, (x, y - 20))
                         else:
                             screen.blit(head_img, rect)
 
@@ -160,8 +161,8 @@ def main():
                 screen.blit(foodImg, food_rect)
 
                 # 显示分数
-                for idx, name in enumerate(usernames):
-                    label = font.render(f"{name}: {scores[idx]}", True, (0, 100 + idx * 15, 50))
+                for idx in range(min(len(usernames), len(scores))):
+                    label = font.render(f"{usernames[idx]}: {scores[idx]}", True, (0, 100 + idx * 15, 50))
                     screen.blit(label, (20, 20 + idx * 30))
 
             pygame.display.flip()
