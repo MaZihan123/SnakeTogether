@@ -4,49 +4,43 @@ import threading
 import pickle
 import time
 import pygame
+import random
 from game_logic import Snake, Food, SCREEN_WIDTH, SCREEN_HEIGHT
 
-# 游戏配置
+pygame.init()
 BLOCK_SIZE = 20
-NUM_PLAYERS = 2
-directions = [pygame.K_RIGHT] * NUM_PLAYERS  # 初始方向
+MAX_PLAYERS = 9
+
+# 全局变量
+NUM_PLAYERS = 2  # 默认值，登录后更新
+directions = []
+snake_list = []
+scores = []
+usernames = []
+connections = []
+
 players_connected = 0
-scores = [0] * NUM_PLAYERS
-usernames = ["Player1", "Player2"]
-
-# 游戏对象初始化
-snake_list = [
-    Snake(200, 300, pygame.K_RIGHT),
-    Snake(600, 300, pygame.K_LEFT)
-]
-directions[0] = pygame.K_RIGHT
-directions[1] = pygame.K_LEFT
-
-
 food = Food()
 
-# 游戏状态控制
 game_started = False
-countdown = 3
-start_time = None
 game_over = False
 winner = None
 end_reason = ""
+start_time = None
+countdown = 3
 
-# 网络通信工具函数
+# 网络通信工具
 def send_with_header(conn, data_dict):
-    """通过头部信息发送结构化数据"""
     body = pickle.dumps(data_dict)
     header = len(body).to_bytes(4, 'big')
     conn.sendall(header + body)
 
 def recv_with_header(conn):
-    """接收带头部信息的数据"""
     try:
         header = conn.recv(4)
         if not header: return None
         length = int.from_bytes(header, 'big')
-        body = b""
+        body = b''
         while len(body) < length:
             chunk = conn.recv(length - len(body))
             if not chunk: return None
@@ -55,23 +49,51 @@ def recv_with_header(conn):
     except:
         return None
 
-# 客户端处理线程
+# 初始化游戏对象
+def init_game_state(num):
+    global directions, snake_list, scores, usernames, food
+    directions = [pygame.K_RIGHT] * num
+    scores = [0] * num
+    usernames = [f"Player{i+1}" for i in range(num)]
+    snake_list.clear()
+
+    # 为每条蛇生成初始位置和方向
+    for _ in range(num):
+        x = random.randint(100, SCREEN_WIDTH - 100)
+        y = random.randint(100, SCREEN_HEIGHT - 100)
+        dir = random.choice([pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN])
+        snake = Snake(x, y, dir)
+        snake_list.append(snake)
+
+    food = Food()
+
+# 处理每个客户端连接
 def client_handler(conn, player_id):
-    global directions, players_connected, usernames
+    global players_connected, usernames
+
     try:
-        # 接收玩家初始化信息
         init_msg = recv_with_header(conn)
         if isinstance(init_msg, dict) and init_msg.get("type") == "init":
+            # 第一个玩家决定本局人数
+            if player_id == 0:
+                global NUM_PLAYERS
+                requested = init_msg.get("requested_mode", 2)
+                NUM_PLAYERS = max(2, min(9, requested))
+                print(f"游戏设置为 {NUM_PLAYERS} 人模式")
+                init_game_state(NUM_PLAYERS)
+
             usernames[player_id] = init_msg.get("username", f"Player{player_id+1}")
-            print(f"Player {player_id} connected as: {usernames[player_id]}")
+            print(f"玩家 {player_id + 1} 加入游戏：{usernames[player_id]}")
         else:
-            print(f"Player {player_id} 初始化失败")
+            print("接收初始化失败")
+            conn.close()
+            return
     except Exception as e:
-        print(f"接收初始化信息失败: {e}")
+        print("初始化异常：", e)
         conn.close()
         return
 
-    # 持续接收方向指令
+    # 接收方向控制
     while True:
         try:
             data = conn.recv(1024)
@@ -80,46 +102,40 @@ def client_handler(conn, player_id):
             directions[player_id] = new_dir
         except:
             break
+
+    print(f"{usernames[player_id]} 已断开连接")
     conn.close()
-    print(f"{usernames[player_id]} 断开连接")
     players_connected -= 1
 
-# 游戏状态广播核心
-def broadcast_game_state(conns):
-    ate = [False, False]
-    global snake_list, food, directions, scores
-    global game_started, countdown, start_time, game_over, winner, end_reason
+# 广播游戏状态
+def broadcast_game_state():
+    global game_started, countdown, start_time
+    global game_over, winner, end_reason
 
     clock = pygame.time.Clock()
     countdown_start = time.time()
-
-    # 初始化随机方向（仅一次）
-    import random
-    for i in range(NUM_PLAYERS):
-        directions[i] = random.choice([pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN])
+    ate = [False] * NUM_PLAYERS
 
     while True:
         clock.tick(10)
         now = time.time()
 
-        # 游戏开始前的倒计时
+        # 倒计时逻辑
         if not game_started:
             elapsed = int(now - countdown_start)
             countdown = max(0, 3 - elapsed)
-            if countdown == 0 and not game_started:
-                start_time = now
+            if countdown == 0:
                 game_started = True
+                start_time = now
 
-        # 游戏进行中
         elif not game_over:
-            ate = [False, False]
-
-            # 更新蛇的位置
+            ate = [False] * NUM_PLAYERS
+            # 每条蛇移动
             for i, snake in enumerate(snake_list):
                 snake.change_direction(directions[i])
                 snake.move()
 
-                # 检测食物
+                # 吃食物检测
                 if snake.body[0].colliderect(food.rect):
                     tail = snake.body[-1].copy()
                     snake.body.append(tail)
@@ -127,70 +143,87 @@ def broadcast_game_state(conns):
                     food.refresh()
                     ate[i] = True
 
-            # 检测游戏结束条件
+            # 死亡检测
             dead = [s.is_dead() for s in snake_list]
             if any(dead):
                 game_over = True
-                winner = 1 - dead.index(True)
-                end_reason = f"{usernames[dead.index(True)]} 死亡"
-            elif now - start_time >= 120:  # 2分钟限时
+                loser = dead.index(True)
+                end_reason = f"{usernames[loser]} 撞墙死亡"
+                remaining_scores = [(i, scores[i]) for i, alive in enumerate(dead) if not alive]
+                if not remaining_scores:
+                    winner = -1
+                else:
+                    winner = max(remaining_scores, key=lambda x: x[1])[0]
+
+            elif now - start_time >= 120:
                 game_over = True
-                if scores[0] > scores[1]:
-                    winner = 0
-                    end_reason = "时间到，分数更高"
-                elif scores[1] > scores[0]:
-                    winner = 1
-                    end_reason = "时间到，分数更高"
+                max_score = max(scores)
+                win_list = [i for i, s in enumerate(scores) if s == max_score]
+                if len(win_list) == 1:
+                    winner = win_list[0]
+                    end_reason = "时间到，分数最高"
                 else:
                     winner = -1
-                    end_reason = "平局"
+                    end_reason = "时间到，平局"
 
-        # 构建游戏状态数据
+        # 构建游戏状态
         game_state = {
-            "snakes": [ [(node.x, node.y) for node in s.body] for s in snake_list ],
+            "snakes": [[(b.x, b.y) for b in s.body] for s in snake_list],
             "food": (food.rect.x, food.rect.y),
             "scores": scores,
-            "ate": ate if game_started and not game_over else [False, False],
+            "ate": ate if game_started and not game_over else [False] * NUM_PLAYERS,
             "usernames": usernames,
             "countdown": countdown if not game_started else 0,
             "winner": winner,
             "end_reason": end_reason
         }
 
-        # 广播给所有客户端
-        for c in conns:
+        # 发送给所有客户端
+        for conn in connections:
             try:
-                send_with_header(c, game_state)
+                send_with_header(conn, game_state)
             except:
                 pass
 
         if game_over:
-            print(f"游戏结束：{end_reason}")
+            print("游戏结束：", end_reason)
             break
 
-# 服务器启动函数
+# 启动服务器
 def start_server():
+    global players_connected
+
     host = "0.0.0.0"
     port = 12345
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
-    server_socket.listen(NUM_PLAYERS)
+    server_socket.listen(MAX_PLAYERS)
 
     print("服务器启动，等待玩家连接...")
-    conns = []
-    global players_connected
 
-    # 等待两个玩家连接
+    # 第一个玩家连接
+    conn, addr = server_socket.accept()
+    print(f"首位玩家连接：{addr}")
+    connections.append(conn)
+    usernames.append("Player1")  # 预填用户名
+    players_connected += 1
+    threading.Thread(target=client_handler, args=(conn, 0), daemon=True).start()
+
+    # 稍等一会，等第一个玩家发送 init_info
+    time.sleep(0.5)
+
+    # 填补剩余 slots
     while players_connected < NUM_PLAYERS:
         conn, addr = server_socket.accept()
-        print(f"接收连接：{addr}")
+        print(f"玩家连接：{addr}")
         player_id = players_connected
+        connections.append(conn)
+        usernames.append(f"Player{player_id + 1}")
         players_connected += 1
-        conns.append(conn)
         threading.Thread(target=client_handler, args=(conn, player_id), daemon=True).start()
 
-    print("两个玩家已连接，开始倒计时...")
-    broadcast_game_state(conns)
+    print(f"{NUM_PLAYERS} 名玩家已连接，开始游戏倒计时...")
+    broadcast_game_state()
 
 if __name__ == "__main__":
     start_server()
