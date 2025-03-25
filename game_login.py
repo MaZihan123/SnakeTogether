@@ -9,6 +9,7 @@ pygame.display.set_caption("选择玩家身份")
 
 font = pygame.font.SysFont("Arial", 32)
 small_font = pygame.font.SysFont("Arial", 24)
+
 clock = pygame.time.Clock()
 
 input_box = pygame.Rect(150, 80, 300, 40)
@@ -24,10 +25,8 @@ button2 = pygame.Rect(340, 200, 180, 60)
 def draw_button(rect, text):
     pygame.draw.rect(screen, (100, 200, 100), rect)
     label = small_font.render(text, True, (0, 0, 0))
-    screen.blit(label, (
-        rect.x + (rect.width - label.get_width()) // 2,
-        rect.y + (rect.height - label.get_height()) // 2
-    ))
+    screen.blit(label, (rect.x + (rect.width - label.get_width()) // 2,
+                        rect.y + (rect.height - label.get_height()) // 2))
 
 def get_player_choice():
     global active, color, username
