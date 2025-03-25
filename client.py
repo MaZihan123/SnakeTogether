@@ -1,81 +1,122 @@
-# game_login.py
+# client.py
+import socket
+import pickle
 import pygame
-import sys
+from game_login import get_player_info
 
-pygame.init()
-SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("选择玩家身份")
+# 获取玩家身份与昵称
+player_id, username = get_player_info()
+if player_id == 0:
+    import player1 as player
+else:
+    import player2 as player
 
-font = pygame.font.SysFont("Arial", 32)
-small_font = pygame.font.SysFont("Arial", 24)
-clock = pygame.time.Clock()
+BLOCK_SIZE = 20
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
-input_box = pygame.Rect(150, 80, 300, 40)
-color_inactive = pygame.Color('lightskyblue3')
-color_active = pygame.Color('dodgerblue2')
-color = color_inactive
-active = False
-username = ""
 
-button1 = pygame.Rect(80, 200, 180, 60)
-button2 = pygame.Rect(340, 200, 180, 60)
+def recvall(sock, n):
+    data = b''
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
 
-def draw_button(rect, text):
-    pygame.draw.rect(screen, (100, 200, 100), rect)
-    label = small_font.render(text, True, (0, 0, 0))
-    screen.blit(label, (
-        rect.x + (rect.width - label.get_width()) // 2,
-        rect.y + (rect.height - label.get_height()) // 2
-    ))
 
-def get_player_choice():
-    global active, color, username
-    while True:
+def main():
+    server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
+    server_port = 12345
+    print(f"Connecting to server {server_ip}:{server_port}...")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((server_ip, server_port))
+    print("Connected to server.")
+
+    # 注册身份信息
+    init_info = {
+        "type": "init",
+        "player_id": player_id,
+        "username": username
+    }
+    init_bytes = pickle.dumps(init_info)
+    sock.sendall(len(init_bytes).to_bytes(4, 'big') + init_bytes)
+
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption(f"Snake Client - Player {player_id + 1}")
+    clock = pygame.time.Clock()
+
+    current_direction = pygame.K_RIGHT
+    running = True
+
+    while running:
+        clock.tick(10)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if input_box.collidepoint(event.pos):
-                    active = True
-                    color = color_active
-                else:
-                    active = False
-                    color = color_inactive
-                if button1.collidepoint(event.pos) and username.strip():
-                    return 0, username.strip()
-                if button2.collidepoint(event.pos) and username.strip():
-                    return 1, username.strip()
-            if event.type == pygame.KEYDOWN and active:
-                if event.key == pygame.K_RETURN:
-                    active = False
-                    color = color_inactive
-                elif event.key == pygame.K_BACKSPACE:
-                    username = username[:-1]
-                else:
-                    if len(username) < 12:
-                        username += event.unicode
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
+                    current_direction = event.key
+                    try:
+                        sock.sendall(pickle.dumps(current_direction))
+                    except Exception as e:
+                        print("发送方向失败:", e)
+                        running = False
 
-        screen.fill((255, 255, 255))
+        try:
+            header = recvall(sock, 4)
+            if not header:
+                print("服务器断开连接")
+                break
+            length = int.from_bytes(header, 'big')
+            body = recvall(sock, length)
+            if not body:
+                print("未接收到完整数据")
+                break
+            game_state = pickle.loads(body)
 
-        title = font.render("请输入你的昵称并选择角色", True, (0, 0, 0))
-        screen.blit(title, ((SCREEN_WIDTH - title.get_width()) // 2, 20))
+            screen.fill((255, 255, 255))
 
-        pygame.draw.rect(screen, color, input_box, 2)
-        txt_surface = font.render(username, True, (0, 0, 0))
-        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
-        input_box.w = max(300, txt_surface.get_width() + 10)
+            snakes = game_state["snakes"]
+            food_pos = game_state["food"]
+            scores = game_state["scores"]
+            ate = game_state.get("ate", [False, False])
+            usernames = game_state.get("usernames", ["Player1", "Player2"])
 
-        draw_button(button1, "选择 IKUN (Player 1)")
-        draw_button(button2, "选择 KOBE (Player 2)")
+            # 播放吃食音效
+            if ate[player_id]:
+                player.eat_sound.play()
 
-        pygame.display.flip()
-        clock.tick(30)
+            # 绘制蛇
+            for i, snake_body in enumerate(snakes):
+                img = player.snake_head_img if i == player_id else player.snake_body_img
+                for x, y in snake_body:
+                    rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
+                    screen.blit(img, rect)
 
-def get_player_id():
-    player_id, _ = get_player_choice()
-    return player_id
+            # 绘制食物
+            food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
+            screen.blit(player.snake_body_img, food_rect)
 
-def get_player_info():
-    return get_player_choice()
+            # 显示分数和昵称
+            font = pygame.font.SysFont(None, 28)
+            label1 = font.render(f"{usernames[0]}: {scores[0]}", True, (0, 128, 0))
+            label2 = font.render(f"{usernames[1]}: {scores[1]}", True, (128, 0, 0))
+            screen.blit(label1, (20, 20))
+            screen.blit(label2, (20, 50))
+
+            pygame.display.flip()
+        except Exception as e:
+            print("游戏循环错误:", e)
+            break
+
+    pygame.quit()
+    sock.close()
+
+
+if __name__ == "__main__":
+    main()

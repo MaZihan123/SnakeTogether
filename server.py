@@ -11,6 +11,7 @@ NUM_PLAYERS = 2
 directions = [pygame.K_RIGHT] * NUM_PLAYERS
 players_connected = 0
 scores = [0] * NUM_PLAYERS
+usernames = ["Player1", "Player2"]
 
 snake_list = [
     Snake(100, 300, pygame.K_RIGHT),
@@ -23,8 +24,36 @@ def send_with_header(conn, data_dict):
     header = len(body).to_bytes(4, 'big')
     conn.sendall(header + body)
 
+def recv_with_header(conn):
+    try:
+        header = conn.recv(4)
+        if not header:
+            return None
+        length = int.from_bytes(header, 'big')
+        body = b""
+        while len(body) < length:
+            chunk = conn.recv(length - len(body))
+            if not chunk:
+                return None
+            body += chunk
+        return pickle.loads(body)
+    except:
+        return None
+
 def client_handler(conn, player_id):
-    global directions, players_connected
+    global directions, players_connected, usernames
+    try:
+        init_msg = recv_with_header(conn)
+        if isinstance(init_msg, dict) and init_msg.get("type") == "init":
+            usernames[player_id] = init_msg.get("username", f"Player{player_id+1}")
+            print(f"Player {player_id} connected as: {usernames[player_id]}")
+        else:
+            print(f"Player {player_id} failed to send init info.")
+    except Exception as e:
+        print(f"Error receiving init from player {player_id}: {e}")
+        conn.close()
+        return
+
     while True:
         try:
             data = conn.recv(1024)
@@ -35,7 +64,7 @@ def client_handler(conn, player_id):
         except:
             break
     conn.close()
-    print(f"Player {player_id} disconnected.")
+    print(f"{usernames[player_id]} disconnected.")
     players_connected -= 1
 
 def broadcast_game_state(conns):
@@ -57,7 +86,7 @@ def broadcast_game_state(conns):
                 ate[i] = True
 
             if snake.is_dead():
-                print(f"Player {i} died. Resetting game.")
+                print(f"{usernames[i]} died. Resetting game.")
                 snake_list[0] = Snake(100,300,pygame.K_RIGHT)
                 snake_list[1] = Snake(700,300,pygame.K_LEFT)
                 scores[0], scores[1] = 0, 0
@@ -68,7 +97,8 @@ def broadcast_game_state(conns):
             "snakes": [ [(node.x,node.y) for node in s.body] for s in snake_list ],
             "food": (food.rect.x, food.rect.y),
             "scores": scores,
-            "ate": ate  # 谁吃到了食物
+            "ate": ate,
+            "usernames": usernames
         }
 
         for c in conns:
@@ -90,7 +120,7 @@ def start_server():
 
     while players_connected < NUM_PLAYERS:
         conn, addr = server_socket.accept()
-        print("Connected from:", addr)
+        print("Accepted connection from:", addr)
         player_id = players_connected
         players_connected += 1
         conns.append(conn)
