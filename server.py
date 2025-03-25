@@ -86,6 +86,7 @@ def client_handler(conn, player_id):
 
 # 游戏状态广播核心
 def broadcast_game_state(conns):
+    ate = [False, False]
     global snake_list, food, directions, scores
     global game_started, countdown, start_time, game_over, winner, end_reason
 

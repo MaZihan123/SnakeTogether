@@ -3,6 +3,8 @@ import socket
 import pickle
 import pygame
 from game_login import get_player_info
+import player1
+import player2
 
 # 获取玩家身份与昵称
 player_id, username = get_player_info()
@@ -15,6 +17,10 @@ BLOCK_SIZE = 20
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+font_path = "fontEND.ttf"
+
+font = pygame.font.Font(font_path, 32)
+
 def recvall(sock, n):
     data = b''
     while len(data) < n:
@@ -25,8 +31,8 @@ def recvall(sock, n):
     return data
 
 def main():
-    #server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
-    server_ip = "10.102.51.4"
+    server_ip = "192.168.1.108"  # 修改为你的服务器实际 IP
+    #server_ip = "10.102.51.4"
     server_port = 12345
     print(f"Connecting to server {server_ip}:{server_port}...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -112,9 +118,9 @@ def main():
                 if ate[player_id]:
                     player.eat_sound.play()
 
-                # 绘制蛇
+                #渲染不同蛇
                 for i, snake_body in enumerate(snakes):
-                    img = player.snake_head_img if i == player_id else player.snake_body_img
+                    img = player1.snake_head_img if i == 0 else player2.snake_head_img
                     for x, y in snake_body:
                         rect = pygame.Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
                         screen.blit(img, rect)
