@@ -106,7 +106,7 @@ def main():
                 continue
 
             snakes = game_state["snakes"]
-            food_pos = game_state["food"]
+            food_positions = game_state.get("foods", [])
             scores = game_state["scores"]
             ate = game_state.get("ate", [])
             usernames = game_state.get("usernames", [])
@@ -171,8 +171,9 @@ def main():
                             screen.blit(head_img, rect)
 
                 # 绘制食物
-                food_rect = pygame.Rect(food_pos[0], food_pos[1], BLOCK_SIZE, BLOCK_SIZE)
-                screen.blit(foodImg, food_rect)
+                for fx, fy in food_positions:
+                    food_rect = pygame.Rect(fx, fy, BLOCK_SIZE, BLOCK_SIZE)
+                    screen.blit(foodImg, food_rect)
 
                 # 显示分数
                 for idx in range(min(len(usernames), len(scores))):

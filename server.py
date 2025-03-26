@@ -20,7 +20,10 @@ usernames = []
 connections = []
 
 players_connected = 0
-food = Food()
+
+food_list = []  # 会在 init_game_state 初始化
+
+
 
 game_started = False
 game_over = False
@@ -51,13 +54,12 @@ def recv_with_header(conn):
 
 # 初始化游戏对象
 def init_game_state(num):
-    global directions, snake_list, scores, usernames, food
+    global directions, snake_list, scores, usernames, food_list
     directions = [pygame.K_RIGHT] * num
     scores = [0] * num
     usernames = [f"Player{i+1}" for i in range(num)]
     snake_list.clear()
 
-    # 为每条蛇生成初始位置和方向
     for _ in range(num):
         x = random.randint(100, SCREEN_WIDTH - 100)
         y = random.randint(100, SCREEN_HEIGHT - 100)
@@ -65,7 +67,8 @@ def init_game_state(num):
         snake = Snake(x, y, dir)
         snake_list.append(snake)
 
-    food = Food()
+    food_list = [Food() for _ in range(max(1, num - 1))]
+
 
 # 处理每个客户端连接
 def client_handler(conn, player_id):
@@ -150,13 +153,15 @@ def broadcast_game_state():
                 snake.change_direction(directions[i])
                 snake.move()
 
-                # 吃食物检测
-                if snake.body[0].colliderect(food.rect):
-                    tail = snake.body[-1].copy()
-                    snake.body.append(tail)
-                    scores[i] += 10
-                    food.refresh()
-                    ate[i] = True
+                # 吃食物检测 一个蛇一帧只吃一个
+                for food in food_list:
+                    if snake.body[0].colliderect(food.rect):
+                        tail = snake.body[-1].copy()
+                        snake.body.append(tail)
+                        scores[i] += 10
+                        food.refresh()
+                        ate[i] = True
+                        break
 
             # 死亡检测
             dead = [s.is_dead() for s in snake_list]
@@ -184,7 +189,7 @@ def broadcast_game_state():
         # 构建游戏状态
         game_state = {
             "snakes": [[(b.x, b.y) for b in s.body] for s in snake_list],
-            "food": (food.rect.x, food.rect.y),
+            "foods": [(f.rect.x, f.rect.y) for f in food_list],
             "scores": scores,
             "ate": ate if game_started and not game_over else [False] * NUM_PLAYERS,
             "usernames": usernames,
