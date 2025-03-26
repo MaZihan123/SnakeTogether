@@ -107,6 +107,21 @@ def client_handler(conn, player_id):
     conn.close()
     players_connected -= 1
 
+def broadcast_waiting_status():
+    while players_connected < NUM_PLAYERS:
+        game_state = {
+            "countdown": -1,
+            "connected": players_connected,
+            "expected": NUM_PLAYERS,
+        }
+        for conn in connections:
+            try:
+                send_with_header(conn, game_state)
+            except:
+                pass
+        time.sleep(0.5)
+
+
 # 广播游戏状态
 def broadcast_game_state():
     global game_started, countdown, start_time
@@ -189,6 +204,9 @@ def broadcast_game_state():
             print("游戏结束：", end_reason)
             break
 
+
+
+
 # 启动服务器
 def start_server():
     global players_connected
@@ -211,6 +229,9 @@ def start_server():
 
     # 稍等一会，等第一个玩家发送 init_info
     time.sleep(0.5)
+
+    # 启动广播等待信息的线程（独立于连接监听）
+    threading.Thread(target=broadcast_waiting_status, daemon=True).start()
 
     # 填补剩余 slots
     while players_connected < NUM_PLAYERS:

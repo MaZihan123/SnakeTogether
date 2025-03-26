@@ -40,7 +40,7 @@ def draw_waiting_screen(screen, font, width, height, joined, expected):
 
 
 def main():
-    server_ip = "192.168.1.108"  # ⚠️ 修改为你的服务器 IP
+    server_ip = "192.168.1.119"  # ⚠️ 修改为你的服务器 IP
     server_port = 12345
 
     print(f"Connecting to server {server_ip}:{server_port}...")
@@ -67,6 +67,8 @@ def main():
     running = True
     game_ended = False
     game_start_time = None
+    usernames = []
+
 
     while running:
         clock.tick(10)
@@ -93,6 +95,16 @@ def main():
 
             game_state = pickle.loads(body)
 
+            countdown = game_state.get("countdown", -1)
+
+            # 等待界面处理（提前 continue 掉，不再往下读游戏数据）
+            if countdown == -1:
+                connected = game_state.get("connected", len(usernames))
+                expected = game_state.get("expected", mode)
+                draw_waiting_screen(screen, font, SCREEN_WIDTH, SCREEN_HEIGHT, connected, expected)
+                pygame.display.flip()
+                continue
+
             snakes = game_state["snakes"]
             food_pos = game_state["food"]
             scores = game_state["scores"]
@@ -106,7 +118,9 @@ def main():
 
             # 👇 等待其他玩家加入界面
             if countdown == -1:
-                draw_waiting_screen(screen, font, SCREEN_WIDTH, SCREEN_HEIGHT, len(usernames), mode)
+                connected = game_state.get("connected", len(usernames))
+                expected = game_state.get("expected", mode)
+                draw_waiting_screen(screen, font, SCREEN_WIDTH, SCREEN_HEIGHT, connected, expected)
                 pygame.display.flip()
                 continue
 
