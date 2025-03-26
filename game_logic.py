@@ -16,8 +16,24 @@ class Snake:
             node = pygame.Rect(x - i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
             self.body.append(node)
 
+#不穿墙
+    # def move(self):
+    #     head = self.body[0].copy()
+    #     if self.direction == pygame.K_LEFT:
+    #         head.x -= BLOCK_SIZE
+    #     elif self.direction == pygame.K_RIGHT:
+    #         head.x += BLOCK_SIZE
+    #     elif self.direction == pygame.K_UP:
+    #         head.y -= BLOCK_SIZE
+    #     elif self.direction == pygame.K_DOWN:
+    #         head.y += BLOCK_SIZE
+    #     self.body.insert(0, head)
+    #     self.body.pop()
+
+    #穿墙
     def move(self):
         head = self.body[0].copy()
+
         if self.direction == pygame.K_LEFT:
             head.x -= BLOCK_SIZE
         elif self.direction == pygame.K_RIGHT:
@@ -26,6 +42,11 @@ class Snake:
             head.y -= BLOCK_SIZE
         elif self.direction == pygame.K_DOWN:
             head.y += BLOCK_SIZE
+
+        # 穿墙处理
+        head.x %= SCREEN_WIDTH
+        head.y %= SCREEN_HEIGHT
+
         self.body.insert(0, head)
         self.body.pop()
 
@@ -37,9 +58,10 @@ class Snake:
         self.direction = new_dir
 
     def is_dead(self):
-        head = self.body[0]
-        if head.x < 0 or head.x >= SCREEN_WIDTH or head.y < 0 or head.y >= SCREEN_HEIGHT:
-            return True
+        # head = self.body[0]
+        # if head.x < 0 or head.x >= SCREEN_WIDTH or head.y < 0 or head.y >= SCREEN_HEIGHT:
+        #     return True
+        #撞自己
         #if head in self.body[1:]:
         #    return True
         return False
