@@ -31,7 +31,7 @@ def get_server_ip():
     color = pygame.Color('lightskyblue3')
     active = True
 
-    # ✅ 读取上次 IP（默认值）
+    #读取上次 IP（默认值）
     text = ""
     if os.path.exists("last_ip.txt"):
         with open("last_ip.txt", "r") as f:
@@ -40,7 +40,7 @@ def get_server_ip():
     while True:
         screen.fill((255, 255, 255))
 
-        # ✅ 提示信息
+        #提示信息
         prompt_text = f"请输入服务器 IP 地址：" if not text else f"使用默认 IP：{text}"
         prompt = font.render(prompt_text, True, (0, 0, 0))
         screen.blit(prompt, (100, 30))
@@ -52,7 +52,7 @@ def get_server_ip():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if text.strip():
-                        # ✅ 保存为最新 IP
+                        # 保存为最新 IP
                         with open("last_ip.txt", "w") as f:
                             f.write(text.strip())
                         return text.strip()
@@ -93,8 +93,8 @@ def main():
     server_ip = get_server_ip()
     server_port = 12345
     mode, _, username = get_player_info()
-    player_id = None  # ❗ 初始化为空，后续从服务器获得
-    player = None     # ❗ 后续加载对应 player 模块
+    player_id = None  #初始化为空，后续从服务器获得
+    player = None     #后续加载对应 player 模块
 
     print(f"Connecting to server {server_ip}:{server_port}...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -104,7 +104,7 @@ def main():
     init_info = {
         "type": "init",
         "requested_mode": mode,
-        "player_id": None,  # 不再传递 player_id
+        "player_id": None,  #不再传递 player_id
         "username": username
     }
     init_bytes = pickle.dumps(init_info)
@@ -146,11 +146,11 @@ def main():
             countdown = game_state.get("countdown", -1)
             usernames = game_state.get("usernames", [])
 
-            # ✅ 自动分配 player_id
+            #自动分配 player_id
             if player_id is None and username in usernames:
                 player_id = usernames.index(username)
-                print(f"✅ 当前玩家编号为 {player_id}")
-                # ✅ 加载对应样式
+                print(f"当前玩家编号为 {player_id}")
+                # 加载对应样式
                 player_module_name = f"player{player_id + 1}"
                 player = importlib.import_module(player_module_name)
 

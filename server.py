@@ -106,10 +106,10 @@ def client_handler(conn, player_id):
             usernames[player_id] = username
             print(f"玩家 {player_id + 1} 加入游戏：{username}")
 
-            # ✅ 第一个玩家设置玩家总数
+            # 第一个玩家设置玩家总数
             if player_id == 0 and "requested_mode" in init_msg:
                 NUM_PLAYERS = int(init_msg["requested_mode"])
-                print(f"✅ 设置本局玩家人数为：{NUM_PLAYERS}")
+                print(f"设置本局玩家人数为：{NUM_PLAYERS}")
 
     except Exception as e:
         print(f"处理玩家 {player_id + 1} 时出错:", e)
