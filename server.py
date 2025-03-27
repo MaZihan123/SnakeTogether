@@ -28,6 +28,56 @@ winner = None
 end_reason = ""
 start_time = None
 countdown = 3
+font_path="fontEND.ttf"
+
+
+import os  # 顶部导入
+
+def get_server_ip():
+    pygame.init()
+    screen = pygame.display.set_mode((600, 200))
+    pygame.display.set_caption("请输入服务器 IP")
+    font = pygame.font.Font(font_path, 32)
+    clock = pygame.time.Clock()
+
+    input_box = pygame.Rect(100, 80, 400, 40)
+    color = pygame.Color('lightskyblue3')
+    active = True
+
+    # ✅ 如果存在上次的 IP，读取作为默认值
+    text = ""
+    if os.path.exists("last_ip.txt"):
+        with open("last_ip.txt", "r") as f:
+            text = f.read().strip()
+
+    while True:
+        screen.fill((255, 255, 255))
+        prompt = font.render("请输入服务器 IP 地址：", True, (0, 0, 0))
+        screen.blit(prompt, (100, 30))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN and active:
+                if event.key == pygame.K_RETURN and text.strip():
+                    # ✅ 保存到本地文件
+                    with open("last_ip.txt", "w") as f:
+                        f.write(text.strip())
+                    return text.strip()
+                elif event.key == pygame.K_BACKSPACE:
+                    text = text[:-1]
+                elif len(text) < 20:
+                    text += event.unicode
+
+        pygame.draw.rect(screen, color, input_box, 2)
+        txt_surface = font.render(text, True, (0, 0, 0))
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        input_box.w = max(400, txt_surface.get_width() + 10)
+
+        pygame.display.flip()
+        clock.tick(30)
+
 
 def send_with_header(conn, data_dict):
     body = pickle.dumps(data_dict)
@@ -123,6 +173,8 @@ def broadcast_game_state():
     clock = pygame.time.Clock()
     countdown_start = time.time()
 
+    ate = [False] * NUM_PLAYERS
+
     while True:
         clock.tick(10)
         now = time.time()
@@ -197,7 +249,17 @@ def broadcast_game_state():
 
         if game_over:
             print("游戏结束：", end_reason)
-            break
+
+            # ✅ 延迟几秒展示结果
+            time.sleep(5)
+
+            # ✅ 重置状态，重新开始下一局
+            init_game_state(NUM_PLAYERS)
+            game_started = False
+            game_over = False
+            countdown_start = time.time()
+            winner = None
+            end_reason = ""
 
 def start_server():
     global players_connected

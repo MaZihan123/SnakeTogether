@@ -7,19 +7,49 @@ import time
 import importlib
 from game_login import get_player_info
 
-# 登录界面获取玩家信息
-mode, player_id, username = get_player_info()
-player_module_name = f"player{player_id + 1}"
-player = importlib.import_module(player_module_name)
-
 BLOCK_SIZE = 20
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-
 font_path = "fontEND.ttf"
 foodImg = pygame.image.load("baskteball.png")
 foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))
-font = pygame.font.Font(font_path, 32)
+
+def get_server_ip():
+    pygame.init()
+    screen = pygame.display.set_mode((600, 200))
+    pygame.display.set_caption("请输入服务器 IP")
+    font = pygame.font.Font(font_path, 32)
+    clock = pygame.time.Clock()
+
+    input_box = pygame.Rect(100, 80, 400, 40)
+    color = pygame.Color('lightskyblue3')
+    active = True
+    text = ""
+
+    while True:
+        screen.fill((255, 255, 255))
+        prompt = font.render("请输入服务器 IP 地址：", True, (0, 0, 0))
+        screen.blit(prompt, (100, 30))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN and active:
+                if event.key == pygame.K_RETURN and text.strip():
+                    return text.strip()
+                elif event.key == pygame.K_BACKSPACE:
+                    text = text[:-1]
+                elif len(text) < 20:
+                    text += event.unicode
+
+        pygame.draw.rect(screen, color, input_box, 2)
+        txt_surface = font.render(text, True, (0, 0, 0))
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        input_box.w = max(400, txt_surface.get_width() + 10)
+
+        pygame.display.flip()
+        clock.tick(30)
 
 def recvall(sock, n):
     data = b''
@@ -37,9 +67,19 @@ def draw_waiting_screen(screen, font, width, height, joined, expected):
     screen.blit(msg2, ((width - msg2.get_width()) // 2, height // 2 + 10))
 
 def main():
-    server_ip = "192.168.1.119"
+    pygame.init()
+    font = pygame.font.Font(font_path, 32)
+
+    server_ip = get_server_ip()
     server_port = 12345
     usernames = []
+
+    # 登录选择角色
+    mode, player_id, username = get_player_info()
+
+    # 加载当前玩家的图像和音效
+    player_module_name = f"player{player_id + 1}"
+    player = importlib.import_module(player_module_name)
 
     print(f"Connecting to server {server_ip}:{server_port}...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,7 +95,6 @@ def main():
     init_bytes = pickle.dumps(init_info)
     sock.sendall(len(init_bytes).to_bytes(4, 'big') + init_bytes)
 
-    pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption(f"Snake Client - Player {player_id + 1}")
     clock = pygame.time.Clock()
@@ -135,7 +174,6 @@ def main():
 
                 reason = pygame.font.Font(font_path, 24).render(f"{end_reason}", True, (128, 128, 128))
                 screen.blit(reason, ((SCREEN_WIDTH - reason.get_width()) // 2, SCREEN_HEIGHT - 100))
-
                 game_ended = True
             else:
                 if player_id < len(ate) and ate[player_id]:
@@ -144,7 +182,7 @@ def main():
                 # 蛇
                 for i, snake_body in enumerate(snakes):
                     if not snake_body:
-                        continue  # 跳过死亡玩家
+                        continue
                     try:
                         snake_module = importlib.import_module(f"player{i+1}")
                         head_img = snake_module.snake_head_img
@@ -173,7 +211,7 @@ def main():
                     label = font.render(f"{usernames[idx]}: {scores[idx]}", True, (0, 100 + idx * 15, 50))
                     screen.blit(label, (20, 20 + idx * 30))
 
-                # ✅ 撞自己提示
+                # 撞自己提示
                 if player_id in self_deaths:
                     warn_font = pygame.font.Font(font_path, 24)
                     warn = warn_font.render("你撞到了自己的身体，已被淘汰！", True, (200, 50, 50))
