@@ -3,8 +3,8 @@ import pygame
 import sys
 import os
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 400
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 font_path = os.path.join(os.path.abspath("."), "fontEND.ttf")
 
 def get_player_info():
@@ -32,7 +32,7 @@ def get_player_info():
     while True:
         screen.fill((255, 255, 255))
         prompt = font.render("请输入你的用户名：", True, (0, 0, 0))
-        screen.blit(prompt, (150, 80))
+        screen.blit(prompt, (SCREEN_HEIGHT, SCREEN_WIDTH))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

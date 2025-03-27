@@ -30,11 +30,19 @@ def get_server_ip():
     input_box = pygame.Rect(100, 80, 400, 40)
     color = pygame.Color('lightskyblue3')
     active = True
+
+    # ✅ 读取上次 IP（默认值）
     text = ""
+    if os.path.exists("last_ip.txt"):
+        with open("last_ip.txt", "r") as f:
+            text = f.read().strip()
 
     while True:
         screen.fill((255, 255, 255))
-        prompt = font.render("请输入服务器 IP 地址：", True, (0, 0, 0))
+
+        # ✅ 提示信息
+        prompt_text = f"请输入服务器 IP 地址：" if not text else f"使用默认 IP：{text}"
+        prompt = font.render(prompt_text, True, (0, 0, 0))
         screen.blit(prompt, (100, 30))
 
         for event in pygame.event.get():
@@ -42,15 +50,18 @@ def get_server_ip():
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and text.strip():
-                    with open("last_ip.txt", "w") as f:
-                        f.write(text.strip())
-                    return text.strip()
+                if event.key == pygame.K_RETURN:
+                    if text.strip():
+                        # ✅ 保存为最新 IP
+                        with open("last_ip.txt", "w") as f:
+                            f.write(text.strip())
+                        return text.strip()
                 elif event.key == pygame.K_BACKSPACE:
                     text = text[:-1]
                 elif len(text) < 20:
                     text += event.unicode
 
+        # 绘制输入框
         pygame.draw.rect(screen, color, input_box, 2)
         txt_surface = font.render(text, True, (0, 0, 0))
         screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
@@ -58,6 +69,7 @@ def get_server_ip():
 
         pygame.display.flip()
         clock.tick(30)
+
 
 def recvall(sock, n):
     data = b''
