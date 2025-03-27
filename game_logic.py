@@ -4,6 +4,16 @@
 import pygame
 import random
 
+import sys
+import os
+
+def resource_path(relative_path):
+    """兼容 PyInstaller 打包路径和本地开发路径"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+
 BLOCK_SIZE = 20
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
@@ -67,7 +77,7 @@ class Snake:
         return False
 
 class Food:
-    foodImg="baskteball.png"
+    foodImg=resource_path("baskteball.png")
     def __init__(self):
         self.rect = pygame.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
         self.refresh()

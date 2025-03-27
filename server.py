@@ -7,6 +7,15 @@ import pygame
 import random
 from game_logic import Snake, Food, SCREEN_WIDTH, SCREEN_HEIGHT
 
+import sys
+import os
+
+def resource_path(relative_path):
+    """兼容 PyInstaller 打包路径和本地开发路径"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
 pygame.init()
 BLOCK_SIZE = 20
 MAX_PLAYERS = 9
@@ -28,7 +37,7 @@ winner = None
 end_reason = ""
 start_time = None
 countdown = 3
-font_path="fontEND.ttf"
+font_path=resource_path("fontEND.ttf")
 
 
 import os  # 顶部导入

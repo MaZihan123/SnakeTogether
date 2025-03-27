@@ -1,0 +1,71 @@
+# -*- mode: python ; coding: utf-8 -*-
+
+a = Analysis(
+    ['client.py'],
+    pathex=[],
+    binaries=[],
+    datas=[
+        ('fontEND.ttf', '.'),
+        ('baskteball.png', '.'),
+        ('eat.mp3', '.'),
+        ('player1.py', '.'),
+        ('player2.py', '.'),
+        ('player3.py', '.'),
+        ('player4.py', '.'),
+        ('player5.py', '.'),
+        ('player6.py', '.'),
+        ('player7.py', '.'),
+        ('player8.py', '.'),
+        ('player9.py', '.'),
+        ('game_logic.py', '.'),
+        ('game_login.py', '.'),
+        ('server.py', '.'),
+        ('client.py', '.'),
+        ('ikun.png', '.'),
+        ('kobe.png', '.'),
+        ('man.mp3', '.'),
+        ('牢信.jpg', '.'),
+        ('牢恬.jpg', '.'),
+        ('牢戬.jpg', '.'),
+        ('牢歌.jpg', '.'),
+        ('牢橘.jpg', '.'),
+        ('牢白.jpg', '.'),
+    ],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+
+pyz = PYZ(a.pure)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='client',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='client',
+)

@@ -7,16 +7,29 @@ import time
 import importlib
 from game_login import get_player_info
 
+import sys
+import os
+
+def resource_path(relative_path):
+    """兼容 PyInstaller 打包路径和本地开发路径"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+
 BLOCK_SIZE = 20
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-font_path = "fontEND.ttf"
-foodImg = pygame.image.load("baskteball.png")
+#font_path = "fontEND.ttf"
+font_path = resource_path("fontEND.ttf")
+
+#foodImg = pygame.image.load("baskteball.png")
+foodImg = pygame.image.load(resource_path("baskteball.png"))
 foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))
 
 def get_server_ip():
     pygame.init()
-    screen = pygame.display.set_mode((600, 200))
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("请输入服务器 IP")
     font = pygame.font.Font(font_path, 32)
     clock = pygame.time.Clock()

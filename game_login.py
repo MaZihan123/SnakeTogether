@@ -2,12 +2,22 @@
 import pygame
 import sys
 
+import os
+
+def resource_path(relative_path):
+    """兼容 PyInstaller 打包路径和本地开发路径"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+
 pygame.init()
 SCREEN_WIDTH, SCREEN_HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("登录界面")
 
-font_path = "fontEND.ttf"
+#font_path = "fontEND.ttf"
+font_path = resource_path("fontEND.ttf")
 font = pygame.font.Font(font_path, 32)
 small_font = pygame.font.Font(font_path, 24)
 clock = pygame.time.Clock()
