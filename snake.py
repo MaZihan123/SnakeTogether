@@ -7,13 +7,21 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
 class Snake:
-    def __init__(self, x, y, direction=pygame.K_RIGHT):
-        self.direction = direction
-        self.body = []
-        # 初始给蛇 5 节身体
-        for i in range(5):
-            node = pygame.Rect(x - i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
-            self.body.append(node)
+    class Snake:
+        def __init__(self, x, y, direction=pygame.K_RIGHT):
+            self.direction = direction
+            self.body = []
+
+            for i in range(5):
+                if direction == pygame.K_RIGHT:
+                    node = pygame.Rect(x - i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
+                elif direction == pygame.K_LEFT:
+                    node = pygame.Rect(x + i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
+                elif direction == pygame.K_UP:
+                    node = pygame.Rect(x, y + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                elif direction == pygame.K_DOWN:
+                    node = pygame.Rect(x, y - i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                self.body.append(node)
 
     def move(self):
         # 每帧移动：在头部前进一格，尾部去掉一格
