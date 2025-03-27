@@ -21,6 +21,7 @@ a = Analysis(
         ('game_login.py', '.'),
         ('server.py', '.'),
         ('client.py', '.'),
+        ('snake.py', '.'),
         ('ikun.png', '.'),
         ('kobe.png', '.'),
         ('man.mp3', '.'),

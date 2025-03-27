@@ -1,29 +1,22 @@
 # client.py
-
 import socket
 import pickle
 import pygame
 import time
 import importlib
 from game_login import get_player_info
-
 import sys
 import os
 
 def resource_path(relative_path):
-    """兼容 PyInstaller 打包路径和本地开发路径"""
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-
 BLOCK_SIZE = 20
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-#font_path = "fontEND.ttf"
 font_path = resource_path("fontEND.ttf")
-
-#foodImg = pygame.image.load("baskteball.png")
 foodImg = pygame.image.load(resource_path("baskteball.png"))
 foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))
 
@@ -85,14 +78,9 @@ def main():
 
     server_ip = get_server_ip()
     server_port = 12345
-    usernames = []
-
-    # 登录选择角色
-    mode, player_id, username = get_player_info()
-
-    # 加载当前玩家的图像和音效
-    player_module_name = f"player{player_id + 1}"
-    player = importlib.import_module(player_module_name)
+    mode, _, username = get_player_info()
+    player_id = None  # ❗ 初始化为空，后续从服务器获得
+    player = None     # ❗ 后续加载对应 player 模块
 
     print(f"Connecting to server {server_ip}:{server_port}...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -102,14 +90,14 @@ def main():
     init_info = {
         "type": "init",
         "requested_mode": mode,
-        "player_id": player_id,
+        "player_id": None,  # 不再传递 player_id
         "username": username
     }
     init_bytes = pickle.dumps(init_info)
     sock.sendall(len(init_bytes).to_bytes(4, 'big') + init_bytes)
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption(f"Snake Client - Player {player_id + 1}")
+    pygame.display.set_caption("Snake Client")
     clock = pygame.time.Clock()
 
     current_direction = pygame.K_RIGHT
@@ -142,6 +130,15 @@ def main():
 
             game_state = pickle.loads(body)
             countdown = game_state.get("countdown", -1)
+            usernames = game_state.get("usernames", [])
+
+            # ✅ 自动分配 player_id
+            if player_id is None and username in usernames:
+                player_id = usernames.index(username)
+                print(f"✅ 当前玩家编号为 {player_id}")
+                # ✅ 加载对应样式
+                player_module_name = f"player{player_id + 1}"
+                player = importlib.import_module(player_module_name)
 
             if countdown == -1:
                 connected = game_state.get("connected", len(usernames))
@@ -154,7 +151,6 @@ def main():
             food_positions = game_state.get("foods", [])
             scores = game_state["scores"]
             ate = game_state.get("ate", [])
-            usernames = game_state.get("usernames", [])
             winner = game_state.get("winner", None)
             end_reason = game_state.get("end_reason", "")
             self_deaths = game_state.get("self_deaths", [])
@@ -189,7 +185,7 @@ def main():
                 screen.blit(reason, ((SCREEN_WIDTH - reason.get_width()) // 2, SCREEN_HEIGHT - 100))
                 game_ended = True
             else:
-                if player_id < len(ate) and ate[player_id]:
+                if player_id is not None and player_id < len(ate) and ate[player_id]:
                     player.eat_sound.play()
 
                 # 蛇
