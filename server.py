@@ -198,7 +198,8 @@ def broadcast_game_state():
                 game_started = True
                 start_time = now
 
-        elif not game_over:
+        # ✅ 游戏正式开始之后才做这些逻辑
+        if game_started and not game_over:
             ate = [False] * NUM_PLAYERS
 
             # ✅ 检查撞到自己
@@ -206,11 +207,10 @@ def broadcast_game_state():
                 if i not in self_deaths and snake.body[0] in snake.body[1:]:
                     self_deaths.add(i)
 
-            # 移动 + 吃食物
+            # ✅ 蛇移动 + 吃食物
             for i, snake in enumerate(snake_list):
                 if i in self_deaths:
                     continue
-
                 snake.change_direction(directions[i])
                 snake.move()
 
@@ -223,7 +223,7 @@ def broadcast_game_state():
                         ate[i] = True
                         break
 
-            # 游戏是否结束：所有人都死 or 时间到
+            # ✅ 检查游戏是否结束
             alive = [i for i in range(NUM_PLAYERS) if i not in self_deaths]
             if len(alive) == 0:
                 game_over = True
