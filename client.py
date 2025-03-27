@@ -41,8 +41,10 @@ def get_server_ip():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            elif event.type == pygame.KEYDOWN and active:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and text.strip():
+                    with open("last_ip.txt", "w") as f:
+                        f.write(text.strip())
                     return text.strip()
                 elif event.key == pygame.K_BACKSPACE:
                     text = text[:-1]
@@ -220,8 +222,9 @@ def main():
                     label = font.render(f"{usernames[idx]}: {scores[idx]}", True, (0, 100 + idx * 15, 50))
                     screen.blit(label, (20, 20 + idx * 30))
 
-                # 撞自己提示
-                if player_id in self_deaths:
+
+                # 撞自己提示（确保 player_id 有效）
+                if player_id is not None and player_id in self_deaths:
                     warn_font = pygame.font.Font(font_path, 24)
                     warn = warn_font.render("你撞到了自己的身体，已被淘汰！", True, (200, 50, 50))
                     screen.blit(warn, ((SCREEN_WIDTH - warn.get_width()) // 2, SCREEN_HEIGHT - 80))

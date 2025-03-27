@@ -61,7 +61,10 @@ def get_server_ip():
 
     while True:
         screen.fill((255, 255, 255))
-        prompt = font.render("请输入服务器 IP 地址：", True, (0, 0, 0))
+
+        # ✅ 动态提示（含默认 IP）
+        prompt_text = f"请输入服务器 IP 地址：{'（回车使用默认）' if text else ''}"
+        prompt = font.render(prompt_text, True, (0, 0, 0))
         screen.blit(prompt, (100, 30))
 
         for event in pygame.event.get():
@@ -70,7 +73,7 @@ def get_server_ip():
                 exit()
             elif event.type == pygame.KEYDOWN and active:
                 if event.key == pygame.K_RETURN and text.strip():
-                    # ✅ 保存到本地文件
+                    # ✅ 保存 IP 到文件
                     with open("last_ip.txt", "w") as f:
                         f.write(text.strip())
                     return text.strip()
@@ -79,6 +82,7 @@ def get_server_ip():
                 elif len(text) < 20:
                     text += event.unicode
 
+        # ✅ 输入框 & 文字显示
         pygame.draw.rect(screen, color, input_box, 2)
         txt_surface = font.render(text, True, (0, 0, 0))
         screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
@@ -86,7 +90,6 @@ def get_server_ip():
 
         pygame.display.flip()
         clock.tick(30)
-
 
 def send_with_header(conn, data_dict):
     body = pickle.dumps(data_dict)
