@@ -14,15 +14,18 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
+
+
 pygame.init()
 BLOCK_SIZE = 20
 MAX_PLAYERS = 9
-NUM_PLAYERS = 2  # 默认模式，后续由客户端传来控制
+NUM_PLAYERS = None  # 默认模式，后续由客户端传来控制
 
-directions = []
+
 snake_list = []
-scores = []
-usernames = []
+# directions = []
+# scores = []
+# usernames = []
 connections = []
 
 players_connected = 0
@@ -36,6 +39,11 @@ end_reason = ""
 start_time = None
 countdown = 3
 font_path = resource_path("fontEND.ttf")
+
+directions = [pygame.K_RIGHT] * MAX_PLAYERS
+scores = [0] * MAX_PLAYERS
+usernames = [None] * MAX_PLAYERS
+
 
 def recvall(conn, n):
     data = b''
@@ -82,9 +90,10 @@ def init_game_state(num):
     food_list = [Food() for _ in range(max(1, num - 1))]
 
 def client_handler(conn, player_id):
-    global players_connected, usernames
+    global players_connected, usernames, NUM_PLAYERS
 
     try:
+        # 📨 接收初始信息（用户名、请求的玩家总数）
         header = recvall(conn, 4)
         if not header:
             return
@@ -93,15 +102,24 @@ def client_handler(conn, player_id):
         init_msg = pickle.loads(body)
 
         if isinstance(init_msg, dict) and init_msg.get("type") == "init":
-            usernames[player_id] = init_msg.get("username", f"Player{player_id + 1}")
-            print(f"玩家 {player_id + 1} 加入游戏：{usernames[player_id]}")
+            username = init_msg.get("username", f"Player{player_id + 1}")
+            usernames[player_id] = username
+            print(f"玩家 {player_id + 1} 加入游戏：{username}")
+
+            # ✅ 第一个玩家设置玩家总数
+            if player_id == 0 and "requested_mode" in init_msg:
+                NUM_PLAYERS = int(init_msg["requested_mode"])
+                print(f"✅ 设置本局玩家人数为：{NUM_PLAYERS}")
+
     except Exception as e:
         print(f"处理玩家 {player_id + 1} 时出错:", e)
 
+    # 🎮 接收方向输入
     while True:
         try:
             data = conn.recv(1024)
-            if not data: break
+            if not data:
+                break
             new_dir = pickle.loads(data)
             directions[player_id] = new_dir
         except:
@@ -110,6 +128,7 @@ def client_handler(conn, player_id):
     print(f"{usernames[player_id]} 已断开连接")
     conn.close()
     players_connected -= 1
+
 
 def broadcast_waiting_status():
     while players_connected < NUM_PLAYERS:

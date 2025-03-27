@@ -3,9 +3,19 @@ import pygame
 import sys
 import os
 
+
+import sys
+import os
+
+def resource_path(relative_path):
+    """兼容 PyInstaller 打包路径和本地开发路径"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-font_path = os.path.join(os.path.abspath("."), "fontEND.ttf")
+font_path = resource_path("fontEND.ttf")
 
 def get_player_info():
     pygame.init()
@@ -32,7 +42,7 @@ def get_player_info():
     while True:
         screen.fill((255, 255, 255))
         prompt = font.render("请输入你的用户名：", True, (0, 0, 0))
-        screen.blit(prompt, (SCREEN_HEIGHT, SCREEN_WIDTH))
+        screen.blit(prompt, (20, 30))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
