@@ -19,7 +19,7 @@ def resource_path(relative_path):
 pygame.init()
 BLOCK_SIZE = 20
 MAX_PLAYERS = 9
-NUM_PLAYERS = None  # 默认模式，后续由客户端传来控制
+NUM_PLAYERS = 2#None  # 默认模式，后续由客户端传来控制
 
 
 death_reasons = {}  # key: player_id, value: 死亡原因字符串
@@ -226,6 +226,10 @@ def broadcast_game_state():
                 else:
                     winner = -1
                     end_reason = "时间到，平局"
+            elif len(alive) == 1:
+                game_over = True
+                winner = alive[0]
+                end_reason = f"{usernames[alive[0]]} 是最后存活者，胜出！"
 
         # ✅ 构造并广播游戏状态
         game_state = {
@@ -263,7 +267,7 @@ def broadcast_game_state():
 def start_server():
     global players_connected
 
-    host = "192.168.1.106"
+    host = "0.0.0.0"
     port = 12345
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
