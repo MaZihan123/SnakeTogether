@@ -77,7 +77,7 @@ class Snake:
         return False
 
 class Food:
-    foodImg=resource_path("baskteball.png")
+    foodImg=resource_path("assets/baskteball.png")
     def __init__(self):
         self.rect = pygame.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
         self.refresh()

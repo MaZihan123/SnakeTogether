@@ -39,7 +39,7 @@ winner = None
 end_reason = ""
 start_time = None
 countdown = 3
-font_path = resource_path("fontEND.ttf")
+font_path = resource_path("assets/fontEND.ttf")
 
 directions = [pygame.K_RIGHT] * MAX_PLAYERS
 scores = [0] * MAX_PLAYERS
@@ -238,6 +238,8 @@ def broadcast_game_state():
             "winner": winner,
             "end_reason": end_reason,
             "self_deaths": list(self_deaths),
+            "death_reasons": death_reasons,  # ✅ 发送死亡原因到客户端
+
         }
 
         for conn in connections:

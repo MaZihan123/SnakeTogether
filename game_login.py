@@ -15,7 +15,7 @@ def resource_path(relative_path):
 
 SCREEN_WIDTH = 1080
 SCREEN_HEIGHT = 720
-font_path = resource_path("fontEND.ttf")
+font_path = resource_path("assets/fontEND.ttf")
 
 def get_player_info():
     pygame.init()

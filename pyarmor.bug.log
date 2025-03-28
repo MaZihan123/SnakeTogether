@@ -1,0 +1,38 @@
+[BUG]: No module named 'pyarmor.cli.core.darwin.arm64'
+
+## Command Line
+/opt/anaconda3/envs/snake/bin/pyarmor gen -r client.py game_login.py game_logic.py snake.py player1.py player2.py player3.py player4.py player5.py player6.py player7.py player8.py player9.py server.py
+
+## Environments
+Python 3.8.20
+Pyarmor 9.1.2 (trial), 000000, non-profits
+Platform darwin.aarch64
+Native darwin.arm64
+Home /Users/mazihan/.pyarmor
+
+## Traceback
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/core/__init__.py", line 67, in _import_pytransform3
+    return __import__(
+ModuleNotFoundError: No module named 'pyarmor.cli.core.pytransform3'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/__main__.py", line 793, in main
+    main_entry(sys.argv[1:])
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/__main__.py", line 786, in main_entry
+    return args.func(ctx, args)
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/__main__.py", line 248, in cmd_gen
+    builder.process(options)
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/generate.py", line 179, in process
+    Pytransform3.pre_build(self.ctx)
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/core/__init__.py", line 109, in pre_build
+    m = Pytransform3.init(ctx)
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/core/__init__.py", line 87, in init
+    Pytransform3._pytransform3 = m = _import_pytransform3()
+  File "/opt/anaconda3/envs/snake/lib/python3.8/site-packages/pyarmor/cli/core/__init__.py", line 74, in _import_pytransform3
+    return __import__(
+ModuleNotFoundError: No module named 'pyarmor.cli.core.darwin.arm64'
+
+

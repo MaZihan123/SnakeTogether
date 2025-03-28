@@ -16,9 +16,9 @@ def resource_path(relative_path):
 
 
 # player2的蛇
-snake_head_img = pygame.image.load(resource_path("kobe.png"))
+snake_head_img = pygame.image.load(resource_path("assets/kobe.png"))
 snake_head_img = pygame.transform.scale(snake_head_img, (snake.BLOCK_SIZE, snake.BLOCK_SIZE))
-snake_body_img = pygame.image.load(resource_path("kobe.png"))
+snake_body_img = pygame.image.load(resource_path("assets/kobe.png"))
 snake_body_img = pygame.transform.scale(snake_body_img, (snake.BLOCK_SIZE, snake.BLOCK_SIZE))
 #player2吃食音效
 eat = resource_path("eat.mp3")

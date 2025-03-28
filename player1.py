@@ -19,9 +19,9 @@ def resource_path(relative_path):
 ############################################################
 
 # player1的蛇
-snake_head_img = pygame.image.load(resource_path("ikun.png"))
+snake_head_img = pygame.image.load(resource_path("assets/ikun.png"))
 snake_head_img = pygame.transform.scale(snake_head_img, (snake.BLOCK_SIZE,snake. BLOCK_SIZE))
-snake_body_img = pygame.image.load(resource_path("ikun.png"))
+snake_body_img = pygame.image.load(resource_path("assets/ikun.png"))
 snake_body_img = pygame.transform.scale(snake_body_img, (snake.BLOCK_SIZE, snake.BLOCK_SIZE))
 #player1吃食音效
 pygame.mixer.init()
