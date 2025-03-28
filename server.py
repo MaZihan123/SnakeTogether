@@ -79,16 +79,19 @@ def init_game_state(num):
     scores = [0] * num
     snake_list.clear()
     self_deaths.clear()
-    for idx, snake in enumerate(snake_list):
-        print(f"🐍 蛇{idx + 1} 初始方向: {snake.direction}")
-        print(f"🐍 蛇{idx + 1} 身体: {[(b.x, b.y) for b in snake.body]}")
 
+    # 初始化蛇
     for _ in range(num):
         x = random.randint(100, SCREEN_WIDTH - 100)
         y = random.randint(100, SCREEN_HEIGHT - 100)
         dir = random.choice([pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN])
         snake = Snake(x, y, dir)
         snake_list.append(snake)
+
+    #打印状态
+    for idx, snake in enumerate(snake_list):
+        print(f"🐍 蛇{idx + 1} 初始方向: {snake.direction}")
+        print(f"🐍 蛇{idx + 1} 身体: {[(b.x, b.y) for b in snake.body]}")
 
     food_list = [Food() for _ in range(max(1, num - 1))]
 
@@ -148,15 +151,16 @@ def broadcast_waiting_status():
         time.sleep(0.5)
 
 def broadcast_game_state():
-    tick_count =0
     global game_started, countdown, start_time
     global game_over, winner, end_reason
 
     clock = pygame.time.Clock()
     countdown_start = time.time()
+    tick_count = 0
 
     while True:
         clock.tick(10)
+        tick_count += 1
         now = time.time()
 
         if not game_started:
@@ -169,11 +173,27 @@ def broadcast_game_state():
         if game_started and not game_over:
             ate = [False] * NUM_PLAYERS
 
-            if tick_count>2 and game_started and not game_over:
+            # ✅ 1. 检查撞到自己
+            if tick_count > 2:
                 for i, snake in enumerate(snake_list):
                     if i not in self_deaths and snake.body[0] in snake.body[1:]:
                         self_deaths.add(i)
+                        print(f"玩家{i + 1} 撞到了自己的身体！")
 
+                # ✅ 2. 检查撞到其他蛇
+                for i, snake in enumerate(snake_list):
+                    if i in self_deaths:
+                        continue
+                    head = snake.body[0]
+                    for j, other_snake in enumerate(snake_list):
+                        if j == i or j in self_deaths:
+                            continue
+                        if head in other_snake.body:
+                            self_deaths.add(i)
+                            print(f"玩家{i + 1} 撞到了玩家{j + 1} 的身体！")
+                            break
+
+            # ✅ 3. 移动蛇并检查食物
             for i, snake in enumerate(snake_list):
                 if i in self_deaths:
                     continue
@@ -188,22 +208,24 @@ def broadcast_game_state():
                         ate[i] = True
                         break
 
+            # ✅ 4. 游戏结束判断
             alive = [i for i in range(NUM_PLAYERS) if i not in self_deaths]
             if len(alive) == 0:
                 game_over = True
                 winner = -1
-                end_reason = "所有玩家均已撞到自己"
+                end_reason = "所有玩家均已撞到自己或其他人"
             elif now - start_time >= 120:
                 game_over = True
                 max_score = max(scores)
                 win_list = [i for i, s in enumerate(scores) if s == max_score]
                 if len(win_list) == 1:
                     winner = win_list[0]
-                    end_reason = "时间到，分数最高"
+                    end_reason = "时间到，分数最高者胜出"
                 else:
                     winner = -1
                     end_reason = "时间到，平局"
 
+        # ✅ 构造并广播游戏状态
         game_state = {
             "snakes": [[(b.x, b.y) for b in s.body] if i not in self_deaths else [] for i, s in enumerate(snake_list)],
             "foods": [(f.rect.x, f.rect.y) for f in food_list],
@@ -222,6 +244,7 @@ def broadcast_game_state():
             except:
                 pass
 
+        # ✅ 游戏结束后重置状态
         if game_over:
             print("游戏结束：", end_reason)
             time.sleep(5)
@@ -231,8 +254,7 @@ def broadcast_game_state():
             countdown_start = time.time()
             winner = None
             end_reason = ""
-
-        tick_count+=1
+            tick_count = 0
 
 def start_server():
     global players_connected
