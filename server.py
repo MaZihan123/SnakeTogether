@@ -79,6 +79,9 @@ def init_game_state(num):
     scores = [0] * num
     snake_list.clear()
     self_deaths.clear()
+    for idx, snake in enumerate(snake_list):
+        print(f"🐍 蛇{idx + 1} 初始方向: {snake.direction}")
+        print(f"🐍 蛇{idx + 1} 身体: {[(b.x, b.y) for b in snake.body]}")
 
     for _ in range(num):
         x = random.randint(100, SCREEN_WIDTH - 100)
@@ -145,6 +148,7 @@ def broadcast_waiting_status():
         time.sleep(0.5)
 
 def broadcast_game_state():
+    tick_count =0
     global game_started, countdown, start_time
     global game_over, winner, end_reason
 
@@ -165,9 +169,10 @@ def broadcast_game_state():
         if game_started and not game_over:
             ate = [False] * NUM_PLAYERS
 
-            for i, snake in enumerate(snake_list):
-                if i not in self_deaths and snake.body[0] in snake.body[1:]:
-                    self_deaths.add(i)
+            if tick_count>2 and game_started and not game_over:
+                for i, snake in enumerate(snake_list):
+                    if i not in self_deaths and snake.body[0] in snake.body[1:]:
+                        self_deaths.add(i)
 
             for i, snake in enumerate(snake_list):
                 if i in self_deaths:
@@ -226,6 +231,8 @@ def broadcast_game_state():
             countdown_start = time.time()
             winner = None
             end_reason = ""
+
+        tick_count+=1
 
 def start_server():
     global players_connected

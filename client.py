@@ -14,8 +14,8 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 BLOCK_SIZE = 20
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1080
+SCREEN_HEIGHT = 720
 font_path = resource_path("fontEND.ttf")
 foodImg = pygame.image.load(resource_path("baskteball.png"))
 foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))

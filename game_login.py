@@ -13,8 +13,8 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1080
+SCREEN_HEIGHT = 720
 font_path = resource_path("fontEND.ttf")
 
 def get_player_info():

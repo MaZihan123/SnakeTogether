@@ -3,25 +3,29 @@ import pygame
 import random
 
 BLOCK_SIZE = 20
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1080
+SCREEN_HEIGHT = 720
 
 class Snake:
     class Snake:
-        def __init__(self, x, y, direction=pygame.K_RIGHT):
-            self.direction = direction
-            self.body = []
+        class Snake:
+            def __init__(self, x, y, direction):
+                self.direction = direction
+                self.body = []
 
-            for i in range(5):
+                dx, dy = 0, 0
                 if direction == pygame.K_RIGHT:
-                    node = pygame.Rect(x - i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
+                    dx, dy = -1, 0
                 elif direction == pygame.K_LEFT:
-                    node = pygame.Rect(x + i * BLOCK_SIZE, y, BLOCK_SIZE, BLOCK_SIZE)
+                    dx, dy = 1, 0
                 elif direction == pygame.K_UP:
-                    node = pygame.Rect(x, y + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                    dx, dy = 0, 1
                 elif direction == pygame.K_DOWN:
-                    node = pygame.Rect(x, y - i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
-                self.body.append(node)
+                    dx, dy = 0, -1
+
+                for i in range(5):
+                    node = pygame.Rect(x + dx * i * BLOCK_SIZE, y + dy * i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                    self.body.append(node)
 
     def move(self):
         # 每帧移动：在头部前进一格，尾部去掉一格

@@ -15,8 +15,8 @@ def resource_path(relative_path):
 
 
 BLOCK_SIZE = 20
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1080
+SCREEN_HEIGHT = 720
 
 class Snake:
     def __init__(self, x, y, direction=pygame.K_RIGHT):
