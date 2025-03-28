@@ -17,7 +17,7 @@ BLOCK_SIZE = 20
 SCREEN_WIDTH = 1080
 SCREEN_HEIGHT = 720
 font_path = resource_path("assets/fontEND.ttf")
-foodImg = pygame.image.load(resource_path("assets/food.png"))
+foodImg = pygame.image.load(resource_path("assets/baskteball.png"))
 foodImg = pygame.transform.scale(foodImg, (BLOCK_SIZE, BLOCK_SIZE))
 
 def get_server_ip():

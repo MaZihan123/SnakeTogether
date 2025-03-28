@@ -25,7 +25,7 @@ snake_body_img = pygame.image.load(resource_path("assets/ikun.png"))
 snake_body_img = pygame.transform.scale(snake_body_img, (snake.BLOCK_SIZE, snake.BLOCK_SIZE))
 #player1吃食音效
 pygame.mixer.init()
-eat = resource_path("eat.mp3")
+eat = resource_path("assets/eat.mp3")
 eat_sound = pygame.mixer.Sound(eat)
 
 
