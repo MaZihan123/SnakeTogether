@@ -13,13 +13,13 @@ class Snake:
 
         dx, dy = 0, 0
         if direction == pygame.K_RIGHT:
-            dx, dy = -1, 0
-        elif direction == pygame.K_LEFT:
             dx, dy = 1, 0
+        elif direction == pygame.K_LEFT:
+            dx, dy = -1, 0
         elif direction == pygame.K_UP:
-            dx, dy = 0, 1
-        elif direction == pygame.K_DOWN:
             dx, dy = 0, -1
+        elif direction == pygame.K_DOWN:
+            dx, dy = 0, 1
 
         for i in range(5):
             node = pygame.Rect(x + dx * i * BLOCK_SIZE, y + dy * i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)

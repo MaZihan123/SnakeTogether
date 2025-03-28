@@ -22,6 +22,7 @@ MAX_PLAYERS = 9
 NUM_PLAYERS = None  # 默认模式，后续由客户端传来控制
 
 
+death_reasons = {}  # key: player_id, value: 死亡原因字符串
 snake_list = []
 # directions = []
 # scores = []
@@ -156,11 +157,9 @@ def broadcast_game_state():
 
     clock = pygame.time.Clock()
     countdown_start = time.time()
-    tick_count = 0
 
     while True:
         clock.tick(10)
-        tick_count += 1
         now = time.time()
 
         if not game_started:
@@ -174,13 +173,15 @@ def broadcast_game_state():
             ate = [False] * NUM_PLAYERS
 
             # ✅ 1. 检查撞到自己
-            if tick_count > 2:
+            if game_started and not game_over and (time.time() - start_time) > 0.3:
+                # ✅ 撞到自己
                 for i, snake in enumerate(snake_list):
                     if i not in self_deaths and snake.body[0] in snake.body[1:]:
                         self_deaths.add(i)
+                        death_reasons[i] = "self"
                         print(f"玩家{i + 1} 撞到了自己的身体！")
 
-                # ✅ 2. 检查撞到其他蛇
+                # ✅ 撞到其他蛇
                 for i, snake in enumerate(snake_list):
                     if i in self_deaths:
                         continue
@@ -188,8 +189,9 @@ def broadcast_game_state():
                     for j, other_snake in enumerate(snake_list):
                         if j == i or j in self_deaths:
                             continue
-                        if head in other_snake.body:
+                        if any(head.colliderect(seg) for seg in other_snake.body):
                             self_deaths.add(i)
+                            death_reasons[i] = f"撞到了玩家{j + 1} 的身体"
                             print(f"玩家{i + 1} 撞到了玩家{j + 1} 的身体！")
                             break
 
@@ -254,7 +256,7 @@ def broadcast_game_state():
             countdown_start = time.time()
             winner = None
             end_reason = ""
-            tick_count = 0
+            death_reasons.clear()
 
 def start_server():
     global players_connected

@@ -168,6 +168,7 @@ def main():
             winner = game_state.get("winner", None)
             end_reason = game_state.get("end_reason", "")
             self_deaths = game_state.get("self_deaths", [])
+            death_reasons = game_state.get("death_reasons", [])
 
             screen.fill((255, 255, 255))
 
@@ -234,12 +235,18 @@ def main():
                     label = font.render(f"{usernames[idx]}: {scores[idx]}", True, (0, 100 + idx * 15, 50))
                     screen.blit(label, (20, 20 + idx * 30))
 
-
-                # 撞自己提示（确保 player_id 有效）
                 if player_id is not None and player_id in self_deaths:
+                    reason = death_reasons.get(player_id, "")
+                    if reason == "self":
+                        msg = "你撞到了自己的身体，已被淘汰！"
+                    elif reason:
+                        msg = f"你{reason}，已被淘汰！"
+                    else:
+                        msg = "你已被淘汰！"
+
                     warn_font = pygame.font.Font(font_path, 24)
-                    warn = warn_font.render("你撞到了自己的身体，已被淘汰！", True, (200, 50, 50))
-                    screen.blit(warn, ((SCREEN_WIDTH - warn.get_width()) // 2, SCREEN_HEIGHT - 80))
+                    warn = warn_font.render(msg, True, (200, 50, 50))
+                    screen.blit(warn, ((SCREEN_WIDTH - warn.get_width()) // 2, 20))  # 显示在顶部
 
             pygame.display.flip()
 
